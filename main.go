@@ -46,7 +46,7 @@ func handleConn(conn net.Conn) {
 	req, err := bufio.NewReader(conn).ReadString('\n')
 	if err != nil {
 		fmt.Println("error reading request:", err)
-		resp := getErrorHTTPResponse("", 500)
+		resp := getErrorHTTPResponse([]byte(""), 500)
 		conn.Write([]byte(resp))
 		return
 	}
@@ -56,7 +56,7 @@ func handleConn(conn net.Conn) {
 	f := getFile(reqFile)
 	if _, err := os.Stat(f); err != nil {
 		fmt.Println(err)
-		resp := getErrorHTTPResponse("", 404)
+		resp := getErrorHTTPResponse([]byte(""), 404)
 		conn.Write([]byte(resp))
 		return
 	}
@@ -65,12 +65,12 @@ func handleConn(conn net.Conn) {
 		return
 	}
 	ext := filepath.Ext(f)
-	resp := getOKHTTPResponse(string(contents), ext)
+	resp := getOKHTTPResponse(contents, ext)
 	conn.Write([]byte(resp))
 
 }
 
-func getOKHTTPResponse(body string, ext string) (res string) {
+func getOKHTTPResponse(body []byte, ext string) (res string) {
 	var conType string
 	switch ext {
 	case ".html":
@@ -86,10 +86,10 @@ func getOKHTTPResponse(body string, ext string) (res string) {
 			"%s",
 		conType,
 		len(body),
-		body,
+		string(body),
 	)
 }
-func getErrorHTTPResponse(body string, code int) (res string) {
+func getErrorHTTPResponse(body []byte, code int) (res string) {
 	switch code {
 	case 404:
 		return fmt.Sprintf(
@@ -109,7 +109,7 @@ func getErrorHTTPResponse(body string, code int) (res string) {
 				"\r\n"+
 				"%s",
 			len(body),
-			body,
+			string(body),
 		)
 	}
 
